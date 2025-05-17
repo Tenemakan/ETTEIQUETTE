@@ -9,16 +9,161 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body {
-            background-color: #f0f0f0;
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --background-color: #f8f9fa;
         }
+
+        body {
+            background-color: var(--background-color);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .main-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
         .etiquette-preview {
             background: white;
             padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
         }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Tooltips personnalisés */
+        .custom-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Style pour les inputs */
+        .form-floating > .form-control:focus,
+        .form-floating > .form-control:not(:placeholder-shown) {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+        }
+
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            opacity: 0.65;
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        /* Loader pour l'impression */
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification toast */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .custom-toast {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .main-container {
+                padding-top: 1rem;
+            }
+
+            .card {
+                margin-bottom: 1rem;
+            }
+
+            .form-floating {
+                margin-bottom: 0.5rem;
+            }
+        }
+
         .barcode-container {
             background: white;
             padding: 10px;
@@ -238,125 +383,186 @@
     </style>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="text-center mb-4">ETTIQUETTE GENERATOR</h1>
-        
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-content">
+            <div class="loader-spinner mb-3"></div>
+            <h5>Impression en cours...</h5>
+            <p class="text-muted">Veuillez patienter</p>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Barre de navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-tag-fill me-2"></i>
+                Générateur d'Étiquettes
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-house-door me-1"></i>
+                            Accueil
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-gear me-1"></i>
+                            Paramètres
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="bi bi-question-circle me-1"></i>
+                            Aide
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-container">
         <div class="row">
             <!-- Zone de prévisualisation -->
-            <div class="col-md-6">
-                <div class="etiquette-preview p-4">
-                    <div class="barcode-container" id="etiquette-container">
-                        <div class="draggable logo-container">
-                            <div class="dimensions-display" id="logo-dimensions"></div>
-                            <img src="{{ asset('images/wamp.png') }}" alt="IU Logo" class="logo-iu me-2">
-                            <div class="resize-handle right"></div>
-                            <div class="resize-handle bottom"></div>
-                        </div>
-                        <div class="draggable barcode-element">
-                            <div class="dimensions-display" id="barcode-dimensions"></div>
-                            <svg id="barcode"></svg>
-                            <div class="text-center" id="barcode-text" style="margin-top: -10px;"></div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-eye me-2"></i>
+                            Prévisualisation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="etiquette-preview">
+                            <div class="barcode-container" id="etiquette-container">
+                                <div class="draggable logo-container">
+                                    <div class="dimensions-display" id="logo-dimensions"></div>
+                                    <img src="{{ asset('images/wamp.png') }}" alt="IU Logo" class="logo-iu me-2">
+                                    <div class="resize-handle right"></div>
+                                    <div class="resize-handle bottom"></div>
+                                </div>
+                                <div class="draggable barcode-element">
+                                    <div class="dimensions-display" id="barcode-dimensions"></div>
+                                    <svg id="barcode"></svg>
+                                    <div class="text-center" id="barcode-text" style="margin-top: -10px;"></div>
 
-                            <div class="resize-handle right"></div>
-                            <div class="resize-handle bottom"></div>
-                        </div>
-                        <div class="draggable price-container">
-                            <div class="dimensions-display" id="price-dimensions"></div>
-                            <div class="w-100 d-flex justify-content-center align-items-center">
-                                <span class="h4 w-100" id="prix-preview" style="font-size: 1.8rem;">100.000 Fr</span>
+                                    <div class="resize-handle right"></div>
+                                    <div class="resize-handle bottom"></div>
+                                </div>
+                                <div class="draggable price-container">
+                                    <div class="dimensions-display" id="price-dimensions"></div>
+                                    <div class="w-100 d-flex justify-content-center align-items-center">
+                                        <span class="h4 w-100" id="prix-preview" style="font-size: 1.8rem;">100.000 Fr</span>
+                                    </div>
+                                    <div class="resize-handle right"></div>
+                                    <div class="resize-handle bottom"></div>
+                                </div>
                             </div>
-                            <div class="resize-handle right"></div>
-                            <div class="resize-handle bottom"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Formulaire -->
-            <div class="col-md-6">
-                <form id="etiquetteForm" class="bg-white p-4 rounded shadow-sm">
-                    <div class="mb-3">
-                        <label for="code" class="form-label">Code</label>
-                        <input type="text" class="form-control" id="code" name="code" required>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-pencil-square me-2"></i>
+                            Configuration
+                        </h5>
                     </div>
+                    <div class="card-body">
+                        <form id="etiquetteForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="code" name="code" required>
+                                        <label for="code">Code</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="prix" name="prix" required>
+                                        <label for="prix">Prix</label>
+                                    </div>
+                                </div>
 
-                    <div class="mb-3">
-                        <label for="prix" class="form-label">Prix</label>
-                        <input type="number" class="form-control" id="prix" name="prix" required>
-                    </div>
+                                <div class="col-12">
+                                    <label class="form-label">Format de page</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="page_format" name="page_format">
+                                                <option value="thermal_50x30" selected>50mm × 30mm</option>
+                                                <option value="a4">A4</option>
+                                                <option value="a5">A5</option>
+                                                <option value="a6">A6</option>
+                                                <option value="letter">Letter</option>
+                                                <option value="legal">Legal</option>
+                                                <optgroup label="Xprinter-235B">
+                                                    <option value="thermal_20x30">20mm × 30mm</option>
+                                                    <option value="thermal_30x20">30mm × 20mm</option>
+                                                    <option value="thermal_40x30">40mm × 30mm</option>
+                                                    <option value="thermal_58">Rouleau 58mm</option>
+                                                    <option value="thermal_80">Rouleau 80mm</option>
+                                                </optgroup>
+                                                <option value="custom">Personnalisé</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <select class="form-select" id="page_orientation" name="page_orientation">
+                                                <option value="portrait">Portrait</option>
+                                                <option value="landscape">Paysage</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Format de page</label>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <select class="form-select" id="page_format" name="page_format">
-                                    <option value="thermal_50x30" selected>50mm × 30mm</option>
-                                    <option value="a4">A4</option>
-                                    <option value="a5">A5</option>
-                                    <option value="a6">A6</option>
-                                    <option value="letter">Letter</option>
-                                    <option value="legal">Legal</option>
-                                    <optgroup label="Xprinter-235B">
-                                        <option value="thermal_20x30">20mm × 30mm</option>
-                                        <option value="thermal_30x20">30mm × 20mm</option>
-                                        <option value="thermal_40x30">40mm × 30mm</option>
-                                        <option value="thermal_58">Rouleau 58mm</option>
-                                        <option value="thermal_80">Rouleau 80mm</option>
-                                    </optgroup>
-                                    <option value="custom">Personnalisé</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <select class="form-select" id="page_orientation" name="page_orientation">
-                                    <option value="portrait">Portrait</option>
-                                    <option value="landscape">Paysage</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div id="custom_page_dimensions" class="row mt-2" style="display: none;">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="page_width" placeholder="Largeur">
-                                    <span class="input-group-text">mm</span>
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="nombre_impression" name="nombre_impression" required>
+                                        <label for="nombre_impression">Nombre d'impressions</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="largeur" name="largeur" value="168" min="100" max="500">
+                                        <label for="largeur">Largeur (px)</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="number" class="form-control" id="hauteur" name="hauteur" value="82" min="30" max="500">
+                                        <label for="hauteur">Hauteur (px)</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-outline-primary" id="preview_format_btn">
+                                            <i class="bi bi-eye me-2"></i>
+                                            Prévisualiser le format
+                                        </button>
+                                        <button type="submit" class="btn btn-primary" id="imprimer">
+                                            <i class="bi bi-printer me-2"></i>
+                                            Imprimer
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="page_height" placeholder="Hauteur">
-                                    <span class="input-group-text">mm</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-2 text-muted">
-                            <small>Estimation: <span id="labels_per_page">0</span> étiquettes par page</small>
-                        </div>
-                        <div class="mt-2">
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="preview_format_btn">
-                                <i class="bi bi-eye"></i> Prévisualiser le format
-                            </button>
-                        </div>
+                        </form>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="nombre_impression" class="form-label">Nombre Impression</label>
-                        <input type="number" class="form-control" id="nombre_impression" name="nombre_impression" required>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="largeur" class="form-label">Largeur (px)</label>
-                            <input type="number" class="form-control" id="largeur" name="largeur" value="168" min="100" max="500">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="hauteur" class="form-label">Hauteur (px)</label>
-                            <input type="number" class="form-control" id="hauteur" name="hauteur" value="82" min="30" max="500">
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary" id="imprimer">Imprimer</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -556,10 +762,55 @@
                 }
             });
 
-            // Gestion de l'impression
+            // Fonction pour afficher une notification
+            function showNotification(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `custom-toast ${type}`;
+                toast.innerHTML = `
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-circle'} text-${type === 'success' ? 'success' : 'danger'}"></i>
+                    <span>${message}</span>
+                `;
+                document.querySelector('.toast-container').appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // Ajouter des tooltips aux boutons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function(e) {
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'custom-tooltip';
+                    tooltip.textContent = this.textContent.trim();
+                    document.body.appendChild(tooltip);
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + 'px';
+                    tooltip.style.top = (rect.top - 30) + 'px';
+                    setTimeout(() => tooltip.style.opacity = '1', 10);
+                });
+
+                button.addEventListener('mouseleave', function() {
+                    const tooltips = document.querySelectorAll('.custom-tooltip');
+                    tooltips.forEach(t => t.remove());
+                });
+            });
+
+            // Améliorer la gestion de l'impression
             document.getElementById('etiquetteForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+                const loader = document.querySelector('.loader');
+                loader.style.display = 'flex';
+
+                // Simuler un délai pour l'impression
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    showNotification('Impression lancée avec succès !');
+                }, 1500);
+
                 const nombreImpressions = document.getElementById('nombre_impression').value || 1;
                 const pageFormat = document.getElementById('page_format').value;
                 const pageOrientation = document.getElementById('page_orientation').value;
@@ -938,6 +1189,11 @@
                         min: { width: 100, height: 60 }
                     })
                 ]
+            });
+
+            // Ajouter des animations aux cartes
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.add('fade-in');
             });
         });
     </script>

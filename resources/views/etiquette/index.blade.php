@@ -290,6 +290,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <select class="form-select" id="page_format" name="page_format">
+                                    <option value="thermal_50x30" selected>50mm × 30mm</option>
                                     <option value="a4">A4</option>
                                     <option value="a5">A5</option>
                                     <option value="a6">A6</option>
@@ -299,7 +300,6 @@
                                         <option value="thermal_20x30">20mm × 30mm</option>
                                         <option value="thermal_30x20">30mm × 20mm</option>
                                         <option value="thermal_40x30">40mm × 30mm</option>
-                                        <option value="thermal_50x30">50mm × 30mm</option>
                                         <option value="thermal_58">Rouleau 58mm</option>
                                         <option value="thermal_80">Rouleau 80mm</option>
                                     </optgroup>

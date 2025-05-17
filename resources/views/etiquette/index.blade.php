@@ -248,7 +248,7 @@
                     <div class="barcode-container" id="etiquette-container">
                         <div class="draggable logo-container">
                             <div class="dimensions-display" id="logo-dimensions"></div>
-                            <img src="{{ asset('images/wamp.PNG') }}" alt="IU Logo" class="logo-iu me-2">
+                            <img src="{{ asset('images/wamp.png') }}" alt="IU Logo" class="logo-iu me-2">
                             <div class="resize-handle right"></div>
                             <div class="resize-handle bottom"></div>
                         </div>
